@@ -1,7 +1,16 @@
+require('dotenv').config();
 const TelegramBot = require("node-telegram-bot-api");
-const token = "6581786797:AAEC0uNbJRPyDTm2onUTBO1jkeEuqTz-S2w";
+const nodemailer = require('nodemailer');
+const token = process.env.TELEGRAM_BOT_TOKEN;
 const bot = new TelegramBot(token, { polling: true });
 
+const transporter = nodemailer.createTransport({
+    service : process.env.EMAIL_SERVICE,
+    auth :{
+        user : process.env.EMAIL_USER,
+        pass : process.env.EMAIL_PASS
+    }
+})
 // bot.on('message' , (msg)=>{
 //     const chatId = msg.chat.id
 //     const messageText = msg.text
@@ -43,7 +52,7 @@ bot.onText(/\/new/, (msg) => {
           const userResponse = msg.text;
           console.log('User replied with:', userResponse);
           
-          bot.sendMessage(chatId, `You have successfully registered as : ${userResponse}`);
+          bot.sendMessage(chatId, `You have successfully registered as : ${userResponse}`)
         }
       })).catch((error)=>{
         console.error(error);
@@ -52,7 +61,13 @@ bot.onText(/\/new/, (msg) => {
 
 bot.onText(/\/update/, (msg) => {
   const chatId = msg.chat.id;
-  bot.sendMessage(chatId, "the new email please : ");
+  bot.sendMessage(chatId, "the new email please : ").then(bot.on('message' , (msg) => {
+    const chatId = msg.chat.id;
+    if (msg.text) {
+        const userResponse = msg.text
+        bot.sendMessage(chatId , `You have successfully updated your email as : ${userResponse}`)
+    }
+  }));
 });
 bot.onText(/\/help/, (msg) => {
   const chatId = msg.chat.id;
