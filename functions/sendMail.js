@@ -11,55 +11,53 @@ const transporter = nodemailer.createTransport({
       pass: process.env.MAIL_PASSWORD,
     },
   });
-function sendEmail(chatId,message ,email) {
+  function sendMessage(ctx, text) {
+    ctx.reply(text);
+  }
+ function sendEmail(ctx, message ,email) {
+  const mailOptions = {
+    from: process.env.MAIL_FROM_ADDRESS,
+    to: email,
+    subject: 'Mailgram',
+    text: message,
+  };
+   transporter.sendMail (mailOptions, (error, info) => {
+    if (error) {
+      
+      console.error("Error sending email:", error);
+      sendMessage(ctx , "An error occurred while sending the email.");
+    } else {
+      console.log("Email sent:", info.response);
+      sendMessage(ctx , "your email has been sent successfully")
+
+    }
+  }); 
+}
+  function sendFileToEmail(ctx,  email, fileBuffer , file_name) {
+ 
     const mailOptions = {
       from: process.env.MAIL_FROM_ADDRESS,
-      to: email,
-      subject: message,
-      text: "This is a test email sent from a mailgram.",
+      to: email, 
+      subject: 'File from Mailgram bot',
+      text: 'Here is the file you requested:',
+      attachments: [
+        {
+          filename: file_name,
+          content: fileBuffer,
+        },
+      ],
     };
+  
+  
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         
-        console.error("Error sending email:", error);
-        bot.sendMessage(chatId, "An error occurred while sending the email.");
+        console.error('Error sending email:', error);
+        sendMessage(ctx , 'An error occurred while sending the email.');
       } else {
-        // Email sent successfully
-        console.log("Email sent:", info.response);
-        bot.sendMessage(
-          chatId,
-          "The file has been sent to your registered email address."
-        );
+        console.log('Email sent:', info.response);
+        sendMessage(ctx , 'The file has been sent to your email address.');
       }
-    }); 
+    });
   }
-  // Function to send a file to the registered email without saving it locally
-function sendFileToEmail(chatId, email, fileBuffer , file_name) {
- 
-  const mailOptions = {
-    from: process.env.MAIL_FROM_ADDRESS,   // Sender's email address
-    to: email, // Recipient's email address (registered user's email)
-    subject: 'File from Telegram Bot', // Email subject
-    text: 'Here is the file you requested:', // Plain text body
-    attachments: [
-      {
-        filename: file_name, // Name of the attachment
-        content: fileBuffer, // Buffer containing the file content
-      },
-    ],
-  };
-
-  // Send the email
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      // Handle the error (e.g., log it)
-      console.error('Error sending email:', error);
-      bot.sendMessage(chatId, 'An error occurred while sending the email.');
-    } else {
-      // Email sent successfully
-      console.log('Email sent:', info.response);
-      bot.sendMessage(chatId, 'The file has been sent to laziz email address.');
-    }
-  });
-}
 module.exports = {sendEmail , sendFileToEmail}  
